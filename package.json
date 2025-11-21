@@ -1,0 +1,12 @@
+{
+  "name": "schoologyproxy",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "proxy.js",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "node-fetch": "^3.3.2"
+  }
+}
