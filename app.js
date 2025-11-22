@@ -1,6 +1,6 @@
 // --- Load iCal from proxy ---
 async function loadIcal() {
-    const url = "http://localhost:3000/ical"; // your Node proxy
+    const url = "https://schoology-proxy.onrender.com/ical"; // your Node proxy
     const response = await fetch(url);
     if (!response.ok) throw new Error("Failed to fetch iCal");
     const text = await response.text();
@@ -109,3 +109,4 @@ async function main() {
 
 // Run the main function
 main();
+
