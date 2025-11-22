@@ -56,3 +56,33 @@ button:hover {
   color: #666;
   margin-top: 5px;
 }
+.class-group {
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin-bottom: 12px;
+    border-radius: 8px;
+    background: #f9f9f9;
+}
+
+.class-header {
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.arrow {
+    transition: transform 0.2s ease;
+}
+
+.collapsed .arrow {
+    transform: rotate(-90deg);
+}
+
+.assignments-container {
+    padding-left: 12px;
+}
+
