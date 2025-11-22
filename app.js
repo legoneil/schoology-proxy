@@ -68,7 +68,7 @@ function render(groups) {
 
     for (const className in groups) {
         const group = document.createElement("div");
-        group.className = "class-group";
+        group.className = "class-group collapsed";
 
         const header = document.createElement("div");
         header.className = "class-header";
@@ -77,8 +77,10 @@ function render(groups) {
             <span class="arrow">▶</span>
         `;
 
+        // collapsed by default
         const assignmentsContainer = document.createElement("div");
         assignmentsContainer.className = "assignments-container";
+        assignmentsContainer.style.display = "none";
 
         groups[className].forEach(e => {
             const a = document.createElement("div");
@@ -90,8 +92,8 @@ function render(groups) {
             assignmentsContainer.appendChild(a);
         });
 
-        // Default: expanded
-        let expanded = true;
+        // Default collapsed
+        let expanded = false;
 
         header.addEventListener("click", () => {
             expanded = !expanded;
@@ -136,5 +138,6 @@ async function main() {
 
 // Run the main function
 main();
+
 
 
