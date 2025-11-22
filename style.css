@@ -1,9 +1,12 @@
 body {
-  font-family: Arial, sans-serif;
-  max-width: 700px;
-  margin: auto;
-  padding: 20px;
-  background: #f7f7f7;
+  font-family: "Science Gothic", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: <weight>;
+  font-style: normal;
+  font-variation-settings:
+    "slnt" 0,
+    "wdth" 100,
+    "CTRS" 0;
 }
 
 h1 {
@@ -85,4 +88,5 @@ button:hover {
 .assignments-container {
     padding-left: 12px;
 }
+
 
