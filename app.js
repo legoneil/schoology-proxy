@@ -67,9 +67,18 @@ function render(groups) {
     container.innerHTML = "";
 
     for (const className in groups) {
-        const div = document.createElement("div");
-        div.className = "class-group";
-        div.innerHTML = `<h2>${className}</h2>`;
+        const group = document.createElement("div");
+        group.className = "class-group";
+
+        const header = document.createElement("div");
+        header.className = "class-header";
+        header.innerHTML = `
+            ${className}
+            <span class="arrow">▶</span>
+        `;
+
+        const assignmentsContainer = document.createElement("div");
+        assignmentsContainer.className = "assignments-container";
 
         groups[className].forEach(e => {
             const a = document.createElement("div");
@@ -78,12 +87,30 @@ function render(groups) {
                 <strong>${e.summary}</strong><br>
                 Due: ${formatDate(e.date)}
             `;
-            div.appendChild(a);
+            assignmentsContainer.appendChild(a);
         });
 
-        container.appendChild(div);
+        // Default: expanded
+        let expanded = true;
+
+        header.addEventListener("click", () => {
+            expanded = !expanded;
+
+            if (expanded) {
+                assignmentsContainer.style.display = "block";
+                group.classList.remove("collapsed");
+            } else {
+                assignmentsContainer.style.display = "none";
+                group.classList.add("collapsed");
+            }
+        });
+
+        group.appendChild(header);
+        group.appendChild(assignmentsContainer);
+        container.appendChild(group);
     }
 }
+
 
 // --- Format date from iCal (YYYYMMDD) to MM/DD/YYYY ---
 function formatDate(str) {
@@ -109,4 +136,5 @@ async function main() {
 
 // Run the main function
 main();
+
 
