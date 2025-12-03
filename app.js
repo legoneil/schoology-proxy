@@ -1,6 +1,6 @@
 // --- Load iCal from proxy ---
 async function loadIcal() {
-    const url = "https://schoology-proxy.onrender.com/ical"; // your Node proxy
+    const url = "https://schoology-proxy.onrender.com/ical"; 
     const response = await fetch(url);
     if (!response.ok) throw new Error("Failed to fetch iCal");
     const text = await response.text();
@@ -22,7 +22,7 @@ function parseICal(data) {
             event = null;
         } else if (event) {
             const [key, ...rest] = line.split(":");
-            const value = rest.join(":"); // in case description has ":"
+            const value = rest.join(":");
             if (key.startsWith("SUMMARY")) event.summary = value;
             if (key.startsWith("DTSTART")) event.date = value;
             if (key.startsWith("DESCRIPTION")) event.description = value;
@@ -32,16 +32,40 @@ function parseICal(data) {
     return events;
 }
 
+// ---------- LOCALSTORAGE SYSTEM ----------
+function getRemovedList() {
+    return JSON.parse(localStorage.getItem("removedAssignments") || "[]");
+}
+
+function markRemoved(id) {
+    const list = getRemovedList();
+    if (!list.includes(id)) {
+        list.push(id);
+        localStorage.setItem("removedAssignments", JSON.stringify(list));
+    }
+}
+
+function isRemoved(id) {
+    return getRemovedList().includes(id);
+}
+
+function resetCompleted() {
+    localStorage.removeItem("removedAssignments");
+    location.reload();
+}
+// ------------------------------------------
+
+
 // --- Filter events from today to May 21 ---
 function filterByDate(events) {
     const today = new Date();
     const year = today.getFullYear();
-    const end = new Date(year + 1, 4, 21); // May 21 next year
+    const end = new Date(year + 1, 4, 21);
 
     return events.filter(e => {
         if (!e.date) return false;
         const y = parseInt(e.date.slice(0, 4));
-        const m = parseInt(e.date.slice(4, 6)) - 1; // JS months 0-11
+        const m = parseInt(e.date.slice(4, 6)) - 1;
         const d = parseInt(e.date.slice(6, 8));
         const eventDate = new Date(y, m, d);
         return eventDate >= today && eventDate <= end;
@@ -54,6 +78,7 @@ function groupByClass(events) {
 
     events.forEach(e => {
         const className = e.summary ? e.summary.split(" - ")[0] : "Unknown Class";
+
         if (!groups[className]) groups[className] = [];
         groups[className].push(e);
     });
@@ -61,7 +86,7 @@ function groupByClass(events) {
     return groups;
 }
 
-// --- Render assignments to page ---
+// --- Render assignments with checkboxes + persistence ---
 function render(groups) {
     const container = document.getElementById("assignments");
     container.innerHTML = "";
@@ -72,39 +97,35 @@ function render(groups) {
 
         const header = document.createElement("div");
         header.className = "class-header";
-        header.innerHTML = `
-            ${className}
-            <span class="arrow">▶</span>
-        `;
+        header.innerHTML = `${className} <span class="arrow">▶</span>`;
 
-        // collapsed by default
         const assignmentsContainer = document.createElement("div");
         assignmentsContainer.className = "assignments-container";
         assignmentsContainer.style.display = "none";
 
         groups[className].forEach(e => {
+            const id = `${e.summary}-${e.date}`; // unique ID per assignment
+
+            if (isRemoved(id)) return; // Skip removed items
+
             const a = document.createElement("div");
             a.className = "assignment";
+            a.dataset.id = id;
+
             a.innerHTML = `
+                <input type="checkbox" class="complete-box">
                 <strong>${e.summary}</strong><br>
                 Due: ${formatDate(e.date)}
             `;
+
             assignmentsContainer.appendChild(a);
         });
 
-        // Default collapsed
+        // Toggle collapse
         let expanded = false;
-
         header.addEventListener("click", () => {
             expanded = !expanded;
-
-            if (expanded) {
-                assignmentsContainer.style.display = "block";
-                group.classList.remove("collapsed");
-            } else {
-                assignmentsContainer.style.display = "none";
-                group.classList.add("collapsed");
-            }
+            assignmentsContainer.style.display = expanded ? "block" : "none";
         });
 
         group.appendChild(header);
@@ -114,7 +135,21 @@ function render(groups) {
 }
 
 
-// --- Format date from iCal (YYYYMMDD) to MM/DD/YYYY ---
+// --- ON CHECK → remove + persist ---
+document.addEventListener("change", (e) => {
+    if (e.target.classList.contains("complete-box")) {
+        const row = e.target.closest(".assignment");
+        const id = row.dataset.id;
+
+        markRemoved(id);
+
+        row.style.opacity = "0";
+        setTimeout(() => row.remove(), 200);
+    }
+});
+
+
+// --- Format date ---
 function formatDate(str) {
     if (!str) return "Unknown";
     const y = str.slice(0, 4);
@@ -127,7 +162,7 @@ function formatDate(str) {
 async function main() {
     try {
         let events = await loadIcal();
-        events = filterByDate(events); // <- filter dates dynamically
+        events = filterByDate(events);
         const grouped = groupByClass(events);
         render(grouped);
     } catch (e) {
@@ -136,8 +171,4 @@ async function main() {
     }
 }
 
-// Run the main function
 main();
-
-
-
