@@ -112,11 +112,16 @@ function render(groups) {
             a.className = "assignment";
             a.dataset.id = id;
 
-            a.innerHTML = `
-                <input type="checkbox" class="complete-box">
-                <strong>${e.summary}</strong><br>
-                Due: ${formatDate(e.date)}
-            `;
+           a.innerHTML = `
+    <div class="assignment-row">
+        <button class="complete-btn" data-id="${e.summary}">✔</button>
+        <div class="assignment-text">
+            <strong>${e.summary}</strong><br>
+            Due: ${formatDate(e.date)}
+        </div>
+    </div>
+`;
+
 
             assignmentsContainer.appendChild(a);
         });
@@ -172,3 +177,4 @@ async function main() {
 }
 
 main();
+
