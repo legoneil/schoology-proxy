@@ -87,6 +87,7 @@ function groupByClass(events) {
 }
 
 // --- Render assignments with checkboxes + persistence ---
+// --- Render assignments to page ---
 function render(groups) {
     const container = document.getElementById("assignments");
     container.innerHTML = "";
@@ -97,40 +98,45 @@ function render(groups) {
 
         const header = document.createElement("div");
         header.className = "class-header";
-        header.innerHTML = `${className} <span class="arrow">▶</span>`;
+        header.innerHTML = `
+            ${className}
+            <span class="arrow">▶</span>
+        `;
 
         const assignmentsContainer = document.createElement("div");
         assignmentsContainer.className = "assignments-container";
         assignmentsContainer.style.display = "none";
 
-        groups[className].forEach(e => {
-            const id = `${e.summary}-${e.date}`; // unique ID per assignment
-
-            if (isRemoved(id)) return; // Skip removed items
-
-            const a = document.createElement("div");
-            a.className = "assignment";
-            a.dataset.id = id;
-
-           a.innerHTML = `
-    <div class="assignment-row">
-        <button class="complete-btn" data-id="${e.summary}">✔</button>
-        <div class="assignment-text">
-            <strong>${e.summary}</strong><br>
-            Due: ${formatDate(e.date)}
-        </div>
-    </div>
-`;
-
-
-            assignmentsContainer.appendChild(a);
-        });
-
-        // Toggle collapse
         let expanded = false;
+
         header.addEventListener("click", () => {
             expanded = !expanded;
             assignmentsContainer.style.display = expanded ? "block" : "none";
+            group.classList.toggle("collapsed", !expanded);
+        });
+
+        groups[className].forEach(e => {
+            const id = e.summary + "_" + e.date; // unique ID per assignment
+
+            // skip if completed
+            if (isCompleted(id)) return;
+
+            const a = document.createElement("div");
+            a.className = "assignment";
+
+            a.innerHTML = `
+                <input type="checkbox" class="complete-box">
+                <strong>${e.summary}</strong><br>
+                Due: ${formatDate(e.date)}
+            `;
+
+            // When checked → remove + save to storage
+            a.querySelector(".complete-box").addEventListener("change", () => {
+                markCompleted(id);
+                a.remove();
+            });
+
+            assignmentsContainer.appendChild(a);
         });
 
         group.appendChild(header);
@@ -138,20 +144,6 @@ function render(groups) {
         container.appendChild(group);
     }
 }
-
-
-// --- ON CHECK → remove + persist ---
-document.addEventListener("change", (e) => {
-    if (e.target.classList.contains("complete-box")) {
-        const row = e.target.closest(".assignment");
-        const id = row.dataset.id;
-
-        markRemoved(id);
-
-        row.style.opacity = "0";
-        setTimeout(() => row.remove(), 200);
-    }
-});
 
 
 // --- Format date ---
@@ -177,4 +169,5 @@ async function main() {
 }
 
 main();
+
 
